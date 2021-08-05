@@ -7,7 +7,9 @@ import (
 	"github.com/cebilon123/KE1pY2hhxYJfIkdvZ29BcHBzIE5BU0EiKQ-/infrastructure"
 	"github.com/cebilon123/KE1pY2hhxYJfIkdvZ29BcHBzIE5BU0EiKQ-/server"
 	"net/http"
+	_ "net/http/pprof"
 )
+
 //"tN5MEJyrF1HZKVGrUvPrPiIM44vcm0ByOp0UqWMW"
 func main() {
 	sConfig := config.NewStartup()
