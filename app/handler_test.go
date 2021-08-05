@@ -7,8 +7,8 @@ import (
 
 func TestAreDatesValid(t *testing.T) {
 	type args struct {
-		startDate []time.Time
-		endDate   []time.Time
+		startDate time.Time
+		endDate   time.Time
 	}
 	tests := []struct {
 		name  string
@@ -19,8 +19,8 @@ func TestAreDatesValid(t *testing.T) {
 		{
 			name:  "start_date and end_date valid",
 			args:  args{
-				startDate: []time.Time{time.Date(2021,8,1,0,0,0,0, time.UTC)},
-				endDate:   []time.Time{time.Date(2021,8,5,0,0,0,0, time.UTC)},
+				startDate: time.Date(2021,8,1,0,0,0,0, time.UTC),
+				endDate:   time.Date(2021,8,5,0,0,0,0, time.UTC),
 			},
 			want:  true,
 			want1: "",
@@ -28,20 +28,11 @@ func TestAreDatesValid(t *testing.T) {
 		{
 			name:  "start_date after end_date",
 			args:  args{
-				startDate: []time.Time{time.Date(2021,8,5,0,0,0,0, time.UTC)},
-				endDate:   []time.Time{time.Date(2021,8,1,0,0,0,0, time.UTC)},
+				startDate: time.Date(2021,8,5,0,0,0,0, time.UTC),
+				endDate:   time.Date(2021,8,1,0,0,0,0, time.UTC),
 			},
 			want:  false,
 			want1: "validation error: start_date should be earlier than end_date",
-		},
-		{
-			name:  "start_date and end_date empty",
-			args:  args{
-				startDate: []time.Time{},
-				endDate:   []time.Time{},
-			},
-			want:  false,
-			want1: "start_date or end_date need to passed as query parameters",
 		},
 	}
 	for _, tt := range tests {

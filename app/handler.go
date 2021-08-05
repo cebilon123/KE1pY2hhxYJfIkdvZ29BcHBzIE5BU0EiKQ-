@@ -31,11 +31,9 @@ func NasaPicturesHandler(w http.ResponseWriter, r *http.Request, ip domain.Image
 	sDate := r.URL.Query()[startDateParam]
 	eDate := r.URL.Query()[endDateParam]
 
-	//TODO change func args and parse
-	datesValid, msg := AreDatesValid(sDate, eDate)
-	if  {
+	if len(sDate) == 0 || len(sDate) == 0 {
 		w.WriteHeader(http.StatusBadRequest)
-		w.Write(customError.NewApiErr()
+		w.Write(customError.NewApiErr("start_date or end_date need to passed as query parameters").ToByteSlice())
 		return
 	}
 
@@ -44,6 +42,13 @@ func NasaPicturesHandler(w http.ResponseWriter, r *http.Request, ip domain.Image
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		w.Write(customError.NewApiErr(err.Error()).ToByteSlice())
+		return
+	}
+
+	datesValid, msg := AreDatesValid(start, end)
+	if  !datesValid {
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write(customError.NewApiErr(msg).ToByteSlice())
 		return
 	}
 
@@ -62,13 +67,9 @@ func NasaPicturesHandler(w http.ResponseWriter, r *http.Request, ip domain.Image
 
 // AreDatesValid Checks if date range is valid. Returns true whenever date is valid
 // and returns false as well as explanation why date range is invalid.
-func AreDatesValid(startDate, endDate []time.Time) (bool, string) {
-	if len(startDate) == 0 || len(startDate) == 0 {
-		return false, "start_date or end_date need to passed as query parameters"
-	}
-
+func AreDatesValid(startDate, endDate time.Time) (bool, string) {
 	for i, r := range dateValidationRules {
-		if !r(startDate[0], endDate[0]) {
+		if !r(startDate, endDate) {
 			return false, fmt.Sprintf("validation error: %s",i)
 		}
 	}
