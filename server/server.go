@@ -52,7 +52,7 @@ func (s *Server) WithConfig(nasaApiKey string, maxConcurrentApiCalls int8) *Serv
 
 // AddHandler adds handler to the server.
 func (s *Server) AddHandler(pattern string, handler func(w http.ResponseWriter, r *http.Request)) *Server{
-	fmt.Printf("Endpoint: %s, Method: %s\n", pattern)
+	fmt.Printf("Endpoint: %s", pattern)
 	http.HandleFunc(pattern,handler)
 
 	return s

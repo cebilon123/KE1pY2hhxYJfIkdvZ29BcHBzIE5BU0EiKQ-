@@ -23,11 +23,7 @@ const (
 	apiKeyParam    = "api_key"
 )
 
-var (
-	instance     *NasaImageProvider
-	once         sync.Once
-	currRequests int8
-)
+var currRequests int8
 
 // NasaImageProvider represents nasa image provider which implements
 // ImageProvider interface.
@@ -35,15 +31,6 @@ type NasaImageProvider struct {
 	apiUrl        url.URL
 	maxApiRequest int8
 	mu            sync.Mutex
-}
-
-// GetNasaImageProvider returns nasa image provider instance.
-func GetNasaImageProvider() *NasaImageProvider {
-	once.Do(func() {
-		instance = NewNasaImageProvider()
-	})
-
-	return instance
 }
 
 // NewNasaImageProvider creates new instance of NasaImageProvider.
