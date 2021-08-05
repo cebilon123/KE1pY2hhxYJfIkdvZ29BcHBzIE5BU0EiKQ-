@@ -34,19 +34,20 @@ var (
 type NasaImageProvider struct {
 	apiUrl        url.URL
 	maxApiRequest int8
+	mu            sync.Mutex
 }
 
 // GetNasaImageProvider returns nasa image provider instance.
 func GetNasaImageProvider() *NasaImageProvider {
 	once.Do(func() {
-		instance = newNasaImageProvider()
+		instance = NewNasaImageProvider()
 	})
 
 	return instance
 }
 
 // NewNasaImageProvider creates new instance of NasaImageProvider.
-func newNasaImageProvider() *NasaImageProvider {
+func NewNasaImageProvider() *NasaImageProvider {
 	apiUrl := url.URL{
 		Host:   nasaHost,
 		Scheme: nasaScheme,
@@ -65,7 +66,22 @@ func newNasaImageProvider() *NasaImageProvider {
 	return &NasaImageProvider{apiUrl: apiUrl, maxApiRequest: int8(maxRequestsNum)}
 }
 
-func (n NasaImageProvider) GetImagesUrls(startDate, endDate time.Time) ([]domain.Image, error) {
+func (n *NasaImageProvider) GetImagesUrls(startDate, endDate time.Time) ([]domain.Image, error) {
+	n.mu.Lock()
+	defer func() {
+		currRequests--
+		n.mu.Unlock()
+	}()
+
+	for {
+		if currRequests < n.maxApiRequest {
+			break
+		}
+	}
+
+	currRequests++
+	fmt.Printf("Curr requests: %v\n", currRequests)
+
 	u := getUrlWithDates(startDate, endDate, n.apiUrl)
 	res, err := http.Get(u.String())
 	fmt.Printf("Calling: %s\n", u.String())
