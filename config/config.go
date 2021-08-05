@@ -1,6 +1,9 @@
 package config
 
-import "flag"
+import (
+	"os"
+	"strconv"
+)
 
 // Startup represents configuration which should be build on startup
 // with use of flags
@@ -23,9 +26,19 @@ func NewStartup() *Startup {
 	var apiKey, port string
 	var maxConcurrentNasaRequests int
 
-	flag.StringVar(&apiKey, apiKeyName, defaultApiKey, "Specify api key used to communicate with NASA api")
-	flag.StringVar(&port, portName, defaultPort, "Specify port on which application should listen and serve")
-	flag.IntVar(&maxConcurrentNasaRequests, concurrentRequests, defaultConcurrentRequests, "Specify max number of concurrent requests to NASA api")
+	apiKey = os.Getenv(apiKeyName)
+	if len(apiKey) == 0 {
+		apiKey = defaultApiKey
+	}
+	port = os.Getenv(portName)
+	if len(port) == 0 {
+		port = defaultPort
+	}
+	maxConcurrentNasaRequests, err := strconv.Atoi(os.Getenv(concurrentRequests))
+	if err != nil {
+		maxConcurrentNasaRequests = defaultConcurrentRequests
+	}
+
 
 	return &Startup{ApiKey: apiKey, Port: port, MaxConcurrentNasaRequests: maxConcurrentNasaRequests}
 }

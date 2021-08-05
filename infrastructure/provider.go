@@ -3,6 +3,7 @@ package infrastructure
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/cebilon123/KE1pY2hhxYJfIkdvZ29BcHBzIE5BU0EiKQ-/customError"
 	"github.com/cebilon123/KE1pY2hhxYJfIkdvZ29BcHBzIE5BU0EiKQ-/domain"
 	"github.com/cebilon123/KE1pY2hhxYJfIkdvZ29BcHBzIE5BU0EiKQ-/server"
 	"io/ioutil"
@@ -79,6 +80,10 @@ func (n *NasaImageProvider) GetImagesUrls(startDate, endDate time.Time) ([]domai
 	body, err := ioutil.ReadAll(res.Body)
 	if err != nil {
 		return nil, err
+	}
+
+	if res.StatusCode != http.StatusOK {
+		return nil, customError.Server{Message: "Nasa rejected request"}
 	}
 
 	ret := make([]domain.Image, 1)

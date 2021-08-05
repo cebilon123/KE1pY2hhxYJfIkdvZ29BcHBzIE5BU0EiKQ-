@@ -10,7 +10,7 @@ import (
 	_ "net/http/pprof"
 )
 
-//"tN5MEJyrF1HZKVGrUvPrPiIM44vcm0ByOp0UqWMW"
+//""
 func main() {
 	sConfig := config.NewStartup()
 
