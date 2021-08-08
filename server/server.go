@@ -24,7 +24,7 @@ type config struct {
 const (
 	defaultPort = ":8080"
 
-	ApiKey = "Api_Key"
+	ApiKey                = "Api_Key"
 	MaxConcurrentApiCalls = "Max_Concurrent_Api_Calls"
 )
 
@@ -51,9 +51,9 @@ func (s *Server) WithConfig(nasaApiKey string, maxConcurrentApiCalls int8) *Serv
 }
 
 // AddHandler adds handler to the server.
-func (s *Server) AddHandler(pattern string, handler func(w http.ResponseWriter, r *http.Request)) *Server{
+func (s *Server) AddHandler(pattern string, handler func(w http.ResponseWriter, r *http.Request)) *Server {
 	fmt.Printf("Endpoint: %s\n", pattern)
-	http.HandleFunc(pattern,handler)
+	http.HandleFunc(pattern, handler)
 
 	return s
 }

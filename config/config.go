@@ -14,11 +14,11 @@ type Startup struct {
 }
 
 const (
-	apiKeyName = "API_KEY"
-	defaultApiKey = "DEMO_KEY"
-	portName = "PORT"
-	defaultPort = "8080"
-	concurrentRequests = "CONCURRENT_REQUESTS"
+	apiKeyName                = "API_KEY"
+	defaultApiKey             = "DEMO_KEY"
+	portName                  = "PORT"
+	defaultPort               = "8080"
+	concurrentRequests        = "CONCURRENT_REQUESTS"
 	defaultConcurrentRequests = 5
 )
 
@@ -39,8 +39,5 @@ func NewStartup() *Startup {
 		maxConcurrentNasaRequests = defaultConcurrentRequests
 	}
 
-
 	return &Startup{ApiKey: apiKey, Port: port, MaxConcurrentNasaRequests: maxConcurrentNasaRequests}
 }
-
-

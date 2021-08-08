@@ -17,46 +17,46 @@ func TestAreDatesValid(t *testing.T) {
 		want1 string
 	}{
 		{
-			name:  "start_date and end_date valid",
-			args:  args{
-				startDate: time.Date(2021,8,1,0,0,0,0, time.UTC),
-				endDate:   time.Date(2021,8,5,0,0,0,0, time.UTC),
+			name: "start_date and end_date valid",
+			args: args{
+				startDate: time.Date(2021, 8, 1, 0, 0, 0, 0, time.UTC),
+				endDate:   time.Date(2021, 8, 5, 0, 0, 0, 0, time.UTC),
 			},
 			want:  true,
 			want1: "",
 		},
 		{
-			name:  "start_date after end_date",
-			args:  args{
-				startDate: time.Date(2021,8,5,0,0,0,0, time.UTC),
-				endDate:   time.Date(2021,8,1,0,0,0,0, time.UTC),
+			name: "start_date after end_date",
+			args: args{
+				startDate: time.Date(2021, 8, 5, 0, 0, 0, 0, time.UTC),
+				endDate:   time.Date(2021, 8, 1, 0, 0, 0, 0, time.UTC),
 			},
 			want:  false,
 			want1: "validation error: start_date should be earlier than end_date",
 		},
 		{
-			name:  "start_date before 2015-01-01",
-			args:  args{
-				startDate: time.Date(2014,8,5,0,0,0,0, time.UTC),
-				endDate:   time.Date(2021,8,1,0,0,0,0, time.UTC),
+			name: "start_date before 2015-01-01",
+			args: args{
+				startDate: time.Date(2014, 8, 5, 0, 0, 0, 0, time.UTC),
+				endDate:   time.Date(2021, 8, 1, 0, 0, 0, 0, time.UTC),
 			},
 			want:  false,
 			want1: "validation error: start_date should be greater or equal to 2015-01-01",
 		},
 		{
-			name:  "start_date should be before today",
-			args:  args{
-				startDate: time.Date(2019,8,5,0,0,0,0, time.UTC),
-				endDate:   time.Date(2021,8,1,0,0,0,0, time.UTC),
+			name: "start_date should be before today",
+			args: args{
+				startDate: time.Date(2019, 8, 5, 0, 0, 0, 0, time.UTC),
+				endDate:   time.Date(2021, 8, 1, 0, 0, 0, 0, time.UTC),
 			},
 			want:  true,
 			want1: "",
 		},
 		{
-			name:  "start_date should be before today",
-			args:  args{
-				startDate: time.Now().AddDate(20,0,0),
-				endDate:   time.Date(3120,8,1,0,0,0,0, time.UTC),
+			name: "start_date should be before today",
+			args: args{
+				startDate: time.Now().AddDate(20, 0, 0),
+				endDate:   time.Date(3120, 8, 1, 0, 0, 0, 0, time.UTC),
 			},
 			want:  false,
 			want1: "validation error: start_date should be at least today",
