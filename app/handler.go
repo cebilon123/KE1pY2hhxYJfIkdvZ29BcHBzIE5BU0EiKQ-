@@ -25,6 +25,9 @@ var dateValidationRules = map[string]func(dates ...time.Time) bool{
 	"start_date should be greater or equal to 2015-01-01": func(dates ...time.Time) bool {
 		return dates[0].After(time.Date(2015, 1, 1, 0, 0, 0, 0, time.UTC))
 	},
+	"start_date should be at least today": func(dates ...time.Time) bool {
+		return dates[0].Before(time.Now().UTC())
+	},
 }
 
 type NasaPicturesHandler struct {

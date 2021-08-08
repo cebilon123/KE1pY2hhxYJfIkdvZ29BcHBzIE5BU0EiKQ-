@@ -43,6 +43,24 @@ func TestAreDatesValid(t *testing.T) {
 			want:  false,
 			want1: "validation error: start_date should be greater or equal to 2015-01-01",
 		},
+		{
+			name:  "start_date should be before today",
+			args:  args{
+				startDate: time.Date(2019,8,5,0,0,0,0, time.UTC),
+				endDate:   time.Date(2021,8,1,0,0,0,0, time.UTC),
+			},
+			want:  true,
+			want1: "",
+		},
+		{
+			name:  "start_date should be before today",
+			args:  args{
+				startDate: time.Now().AddDate(20,0,0),
+				endDate:   time.Date(3120,8,1,0,0,0,0, time.UTC),
+			},
+			want:  false,
+			want1: "validation error: start_date should be at least today",
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
