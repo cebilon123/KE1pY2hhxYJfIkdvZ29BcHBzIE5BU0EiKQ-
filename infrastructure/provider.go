@@ -11,7 +11,6 @@ import (
 	"net/url"
 	"os"
 	"strconv"
-	"sync"
 	"time"
 )
 
@@ -24,15 +23,19 @@ const (
 	apiKeyParam    = "api_key"
 )
 
-var currRequests int8
-
 // NasaImageProvider represents nasa image provider which implements
 // ImageProvider interface.
 type NasaImageProvider struct {
-	apiUrl        url.URL
-	maxApiRequest int8
-	mu            sync.Mutex
+	apiUrl url.URL
+	err    error
 }
+
+// requestHandler handles request to nasa api
+type requestHandler struct {
+	id int
+}
+
+var availableRequestHandlers chan requestHandler
 
 // NewNasaImageProvider creates new instance of NasaImageProvider.
 func NewNasaImageProvider() *NasaImageProvider {
@@ -46,52 +49,52 @@ func NewNasaImageProvider() *NasaImageProvider {
 	q.Set(apiKeyParam, os.Getenv(server.ApiKey))
 	apiUrl.RawQuery = q.Encode()
 
-	maxRequestsNum, err := strconv.Atoi(os.Getenv(server.MaxConcurrentApiCalls))
-	if err != nil {
-		maxRequestsNum = 5
-	}
-
-	return &NasaImageProvider{apiUrl: apiUrl, maxApiRequest: int8(maxRequestsNum)}
+	return &NasaImageProvider{apiUrl: apiUrl}
 }
 
 func (n *NasaImageProvider) GetImagesUrls(startDate, endDate time.Time) ([]domain.Image, error) {
-	n.mu.Lock()
-	defer func() {
-		currRequests--
-		n.mu.Unlock()
-	}()
-
-	for {
-		if currRequests < n.maxApiRequest {
-			break
-		}
-	}
-
-	currRequests++
-	fmt.Printf("Curr requests: %v\n", currRequests)
-
 	u := getUrlWithDates(startDate, endDate, n.apiUrl)
-	res, err := http.Get(u.String())
-	fmt.Printf("Calling: %s\n", u.String())
-	if err != nil {
-		return nil, err
+	h := <-availableRequestHandlers
+	res, err := h.getResponse(u.String())
+	n.err = err
+	ret := n.UnmarshalBody(n.ReadBody(res))
+
+	availableRequestHandlers <- h
+
+	return ret, n.err
+}
+
+func (r *requestHandler) getResponse(url string) (*http.Response, error) {
+	return http.Get(url)
+}
+
+func (n *NasaImageProvider) ReadBody(r *http.Response) []byte{
+	if r.StatusCode != http.StatusOK {
+		n.err = customError.Server{Message: "Nasa request returned status other than 200"}
+		return nil
+	}
+	if n.err != nil {
+		return nil
 	}
 
-	body, err := ioutil.ReadAll(res.Body)
-	if err != nil {
-		return nil, err
+	body, err := ioutil.ReadAll(r.Body)
+	n.err = err
+
+	return body
+}
+
+func (n *NasaImageProvider) UnmarshalBody(b []byte) []domain.Image {
+	if n.err != nil {
+		return nil
 	}
 
-	if res.StatusCode != http.StatusOK {
-		return nil, customError.Server{Message: "Nasa rejected request"}
+	var ret []domain.Image
+	if err := json.Unmarshal(b, &ret); err != nil {
+		n.err = err
+		return nil
 	}
 
-	ret := make([]domain.Image, 1)
-	if err := json.Unmarshal(body, &ret); err != nil {
-		return nil, err
-	}
-
-	return ret, nil
+	return ret
 }
 
 func getUrlWithDates(startDate, endDate time.Time, ur url.URL) url.URL {
@@ -102,4 +105,16 @@ func getUrlWithDates(startDate, endDate time.Time, ur url.URL) url.URL {
 	u.RawQuery = q.Encode()
 
 	return u
+}
+
+func init() {
+	maxRq, err := strconv.Atoi(os.Getenv(server.MaxConcurrentApiCalls))
+	if err != nil {
+		maxRq = 5
+	}
+
+	availableRequestHandlers = make(chan requestHandler, maxRq)
+	for i := 0; i < maxRq; i++ {
+		availableRequestHandlers <- requestHandler{id: i}
+	}
 }
