@@ -34,15 +34,24 @@ func TestAreDatesValid(t *testing.T) {
 			want:  false,
 			want1: "validation error: start_date should be earlier than end_date",
 		},
+		{
+			name:  "start_date before 2015-01-01",
+			args:  args{
+				startDate: time.Date(2014,8,5,0,0,0,0, time.UTC),
+				endDate:   time.Date(2021,8,1,0,0,0,0, time.UTC),
+			},
+			want:  false,
+			want1: "validation error: start_date should be greater or equal to 2015-01-01",
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, got1 := AreDatesValid(tt.args.startDate, tt.args.endDate)
+			got, got1 := areDatesValid(tt.args.startDate, tt.args.endDate)
 			if got != tt.want {
-				t.Errorf("AreDatesValid() got = %v, want %v", got, tt.want)
+				t.Errorf("areDatesValid() got = %v, want %v", got, tt.want)
 			}
 			if got1 != tt.want1 {
-				t.Errorf("AreDatesValid() got1 = %v, want %v", got1, tt.want1)
+				t.Errorf("areDatesValid() got1 = %v, want %v", got1, tt.want1)
 			}
 		})
 	}

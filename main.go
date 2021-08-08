@@ -18,7 +18,7 @@ func main() {
 		WithPort(fmt.Sprintf(":%s", sConfig.Port)).
 		WithConfig(sConfig.ApiKey, int8(sConfig.MaxConcurrentNasaRequests)).
 		AddHandler("/pictures", func(w http.ResponseWriter, r *http.Request) {
-			app.NasaPicturesHandler(w, r, infrastructure.NewNasaImageProvider())
+			app.NewNasaPicturesHandler().Handle(w, r, infrastructure.NewNasaImageProvider())
 		}).
 		Start(); err != nil {
 		panic(err)
