@@ -66,7 +66,12 @@ func (n *NasaPicturesHandler) Handle(w http.ResponseWriter, r *http.Request, ip 
 		return
 	}
 
-	mRes, err := json.Marshal(res)
+	urls := make([]string, 0)
+	for _, img := range res {
+		urls = append(urls, img.Url)
+	}
+
+	mRes, err := json.Marshal(urls)
 	w.WriteHeader(http.StatusOK)
 	w.Write(mRes)
 }
@@ -83,7 +88,7 @@ func areDatesValid(startDate, endDate time.Time) (bool, string) {
 	return true, ""
 }
 
-func (n *NasaPicturesHandler) obtainStringDatesFromRequest(r *http.Request) (string,string) {
+func (n *NasaPicturesHandler) obtainStringDatesFromRequest(r *http.Request) (string, string) {
 	sDate := r.URL.Query().Get(startDateParam)
 	eDate := r.URL.Query().Get(endDateParam)
 

@@ -7,6 +7,7 @@ import (
 	"github.com/cebilon123/KE1pY2hhxYJfIkdvZ29BcHBzIE5BU0EiKQ-/domain"
 	"github.com/cebilon123/KE1pY2hhxYJfIkdvZ29BcHBzIE5BU0EiKQ-/server"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"net/url"
 	"os"
@@ -30,12 +31,12 @@ type NasaImageProvider struct {
 	err    error
 }
 
-// requestHandler handles request to nasa api
-type requestHandler struct {
+// requestCollector handles request to nasa api
+type requestCollector struct {
 	id int
 }
 
-var availableRequestHandlers chan requestHandler
+var availableUrlCollectors chan requestCollector
 
 // NewNasaImageProvider creates new instance of NasaImageProvider.
 func NewNasaImageProvider() *NasaImageProvider {
@@ -54,21 +55,22 @@ func NewNasaImageProvider() *NasaImageProvider {
 
 func (n *NasaImageProvider) GetImagesUrls(startDate, endDate time.Time) ([]domain.Image, error) {
 	u := getUrlWithDates(startDate, endDate, n.apiUrl)
-	h := <-availableRequestHandlers
-	res, err := h.getResponse(u.String())
+	c := <-availableUrlCollectors // pulling one of <MaxConcurrentApiCalls> collectors
+	res, err := c.getResponse(u.String())
 	n.err = err
 	ret := n.UnmarshalBody(n.ReadBody(res))
 
-	availableRequestHandlers <- h
+	availableUrlCollectors <- c // pushing collector once again on queue, this way there is always maximal of <MaxConcurrentApiCalls> calls
 
 	return ret, n.err
 }
 
-func (r *requestHandler) getResponse(url string) (*http.Response, error) {
+func (r *requestCollector) getResponse(url string) (*http.Response, error) {
+	log.Printf("Request collector (id: %d) collecting data", r.id)
 	return http.Get(url)
 }
 
-func (n *NasaImageProvider) ReadBody(r *http.Response) []byte{
+func (n *NasaImageProvider) ReadBody(r *http.Response) []byte {
 	if r.StatusCode != http.StatusOK {
 		n.err = customError.Server{Message: "Nasa request returned status other than 200"}
 		return nil
@@ -113,8 +115,8 @@ func init() {
 		maxRq = 5
 	}
 
-	availableRequestHandlers = make(chan requestHandler, maxRq)
+	availableUrlCollectors = make(chan requestCollector, maxRq)
 	for i := 0; i < maxRq; i++ {
-		availableRequestHandlers <- requestHandler{id: i}
+		availableUrlCollectors <- requestCollector{id: i}
 	}
 }
