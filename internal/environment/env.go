@@ -5,6 +5,9 @@ import (
 	"strconv"
 )
 
+// EnvironmentReader is an interface that must be implemented by
+// all environment readers. Used for reading values of given
+// environment variables.
 type EnvironmentReader interface {
 	Port() string
 	ApiKey() string
@@ -27,8 +30,9 @@ const (
 	defaultConcurrentRequests = "5"
 )
 
-// LoadEnv loads environment variables into
-// key=value pair
+// LoadEnv loads environment variables,
+// in case of env variables not found
+// it assings default values in their place
 func LoadEnv() EnvironmentReader {
 	apiKey, exist := os.LookupEnv(ApiKeyName)
 	if !exist {
@@ -38,6 +42,8 @@ func LoadEnv() EnvironmentReader {
 	if !exist {
 		port = defaultPort
 	}
+	port = ":" + port
+
 	concurrentRequests, exist := os.LookupEnv(ConcurrentRequestsName)
 	if !exist {
 		concurrentRequests = defaultConcurrentRequests
