@@ -2,6 +2,12 @@ package iterate
 
 import "time"
 
+// DateRange iterates through
+// range between date start and date end.
+// returns func which returns two values:
+// date and isNext. If isNext is false it
+// means that there are no more dates
+// to iterate on.
 func DateRange(start, end time.Time) func() (time.Time, bool) {
 	y, m, d := start.Date()
 	start = time.Date(y, m, d, 0, 0, 0, 0, time.UTC)
