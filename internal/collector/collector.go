@@ -10,8 +10,3 @@ type ImageCollector interface {
 	// if fetched successfully
 	GetImages(from, to time.Time) ([]string, error)
 }
-
-type nasaImageCollector struct {
-	sema   chan struct{}
-	apiKey string
-}

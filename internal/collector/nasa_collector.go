@@ -18,6 +18,11 @@ const (
 	timeoutSeconds = 10
 )
 
+type nasaImageCollector struct {
+	sema   chan struct{}
+	apiKey string
+}
+
 func NewNasaImageCollector(semaphore chan struct{}, apiKey string) ImageCollector {
 	return &nasaImageCollector{
 		sema:   semaphore,
