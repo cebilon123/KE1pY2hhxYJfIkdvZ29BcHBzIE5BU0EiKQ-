@@ -1,14 +1,31 @@
-package iterate
+package date_range
 
 import "time"
 
-// DateRange iterates through
+// GetDateRangeSlice returns slice of dates between
+// from and to date.
+func GetDateRangeSlice(from, to time.Time) []time.Time {
+	dates := []time.Time{}
+	for dateIterate := dateRange(from, to); ; {
+		date, isNext := dateIterate()
+
+		if !isNext || date.IsZero() {
+			break
+		}
+
+		dates = append(dates, date)
+	}
+
+	return dates
+}
+
+// dateRange iterates through
 // range between date start and date end.
 // returns func which returns two values:
 // date and isNext. If isNext is false it
 // means that there are no more dates
 // to iterate on.
-func DateRange(start, end time.Time) func() (time.Time, bool) {
+func dateRange(start, end time.Time) func() (time.Time, bool) {
 	y, m, d := start.Date()
 	start = time.Date(y, m, d, 0, 0, 0, 0, time.UTC)
 	y, m, d = end.Date()

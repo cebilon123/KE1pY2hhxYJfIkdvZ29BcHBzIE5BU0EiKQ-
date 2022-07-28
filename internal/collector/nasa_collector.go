@@ -7,10 +7,9 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
-	"sync"
 	"time"
 
-	"github.com/cebilon123/KE1pY2hhxYJfIkdvZ29BcHBzIE5BU0EiKQ-/internal/iterate"
+	"github.com/cebilon123/KE1pY2hhxYJfIkdvZ29BcHBzIE5BU0EiKQ-/internal/date_range"
 )
 
 const (
@@ -18,7 +17,6 @@ const (
 )
 
 type nasaImageCollector struct {
-	sema   chan struct{}
 	apiKey string
 
 	imgFetcher imageFetcher
@@ -26,7 +24,6 @@ type nasaImageCollector struct {
 
 func NewNasaImageCollector(semaphore chan struct{}, apiKey string) ImageCollector {
 	return &nasaImageCollector{
-		sema:   semaphore,
 		apiKey: apiKey,
 		imgFetcher: nasaImageFetcher{
 			apiKey:    "y5cnFTkqJzcsSp0I9lAfaaRN6ZpahfIrSswujolO",
@@ -41,52 +38,38 @@ type nasaResponse struct {
 
 func (imgCollector nasaImageCollector) GetImages(from, to time.Time) ([]string, error) {
 	results := []string{}
-	urlsChan := make(chan string)
-	errChan := make(chan error, 1)
-
-	var wg sync.WaitGroup
-	var fetchError error
-
 	defer func() {
 		if err := recover(); err != nil {
 			fmt.Println(err)
 		}
 	}()
 
-	for dateIterate := iterate.DateRange(from, to); ; {
-		date, isNext := dateIterate()
+	dates := date_range.GetDateRangeSlice(from, to)
 
-		if !isNext || date.IsZero() {
-			break
-		}
+	fetchChan := make(chan struct {
+		url string
+		err error
+	}, len(dates))
 
-		wg.Add(1)
-		go func() {
-			defer func() {
-				wg.Done()
-			}()
-			url, err := imgCollector.imgFetcher.fetchImage(date.Format("2006-01-02"))
-			if err != nil {
-				errChan <- err
-				return
-			}
-			urlsChan <- url
-		}()
+	for _, date := range dates {
+		go func(date string) {
+			url, err := imgCollector.imgFetcher.fetchImage(date)
+			fetchChan <- struct {
+				url string
+				err error
+			}{url, err}
+		}(date.Format("2006-01-02"))
 	}
 
-	go func() {
-		for url := range urlsChan {
-			results = append(results, url)
+	for i := 0; i < len(dates); i++ {
+		fetchResult := <-fetchChan
+		if fetchResult.err != nil {
+			return results, fetchResult.err
 		}
-	}()
+		results = append(results, fetchResult.url)
+	}
 
-	go func() {
-		fetchError = <-errChan
-	}()
-
-	wg.Wait()
-
-	return results, fetchError
+	return results, nil
 }
 
 // imageFetcher is a interface that must be implemented

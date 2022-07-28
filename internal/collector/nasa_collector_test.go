@@ -23,10 +23,6 @@ type imageFetcherMock struct {
 }
 
 func (m *imageFetcherMock) fetchImage(date string) (string, error) {
-
-	// mock some kind of network latency
-	time.Sleep(125 * time.Millisecond)
-
 	if date == validFirstDate.Format("2006-01-02") {
 		return imagesUrls[0], nil
 	}
@@ -41,9 +37,7 @@ func (m *imageFetcherMock) fetchImage(date string) (string, error) {
 }
 
 func TestCollector_FetchImages(t *testing.T) {
-	semaphore := make(chan struct{}, 3)
 	imgCollector := &nasaImageCollector{
-		sema:       semaphore,
 		apiKey:     "test",
 		imgFetcher: &imageFetcherMock{},
 	}
