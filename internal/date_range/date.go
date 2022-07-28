@@ -9,7 +9,7 @@ func GetDateRangeSlice(from, to time.Time) []time.Time {
 	for dateIterate := dateRange(from, to); ; {
 		date, isNext := dateIterate()
 
-		if !isNext || date.IsZero() {
+		if !isNext {
 			break
 		}
 
@@ -32,7 +32,7 @@ func dateRange(start, end time.Time) func() (time.Time, bool) {
 	end = time.Date(y, m, d, 0, 0, 0, 0, time.UTC)
 
 	return func() (time.Time, bool) {
-		if start.After(end) {
+		if start.After(end) || start.Equal(end) {
 			return time.Time{}, false
 		}
 		date := start

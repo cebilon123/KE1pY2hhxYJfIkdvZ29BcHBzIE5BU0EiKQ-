@@ -26,7 +26,7 @@ func NewNasaImageCollector(semaphore chan struct{}, apiKey string) ImageCollecto
 	return &nasaImageCollector{
 		apiKey: apiKey,
 		imgFetcher: nasaImageFetcher{
-			apiKey:    "y5cnFTkqJzcsSp0I9lAfaaRN6ZpahfIrSswujolO",
+			apiKey:    apiKey,
 			semaphore: semaphore,
 		},
 	}

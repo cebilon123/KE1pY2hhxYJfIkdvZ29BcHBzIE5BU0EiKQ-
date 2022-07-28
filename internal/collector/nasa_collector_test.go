@@ -17,6 +17,7 @@ var (
 	validFirstDate  = time.Date(2001, 1, 1, 1, 1, 1, 1, time.UTC)
 	validSecondDate = time.Date(2001, 1, 2, 1, 1, 1, 1, time.UTC)
 	validThirdDate  = time.Date(2001, 1, 3, 1, 1, 1, 1, time.UTC)
+	errFetch        = errors.New("example error while fetching")
 )
 
 type imageFetcherMock struct {
@@ -33,7 +34,7 @@ func (m *imageFetcherMock) fetchImage(date string) (string, error) {
 		return imagesUrls[2], nil
 	}
 
-	return "", errors.New("example error while fetching")
+	return "", errFetch
 }
 
 func TestCollector_FetchImages(t *testing.T) {
@@ -62,8 +63,18 @@ func TestCollector_FetchImages(t *testing.T) {
 				to:   validThirdDate,
 			},
 			expected: expected{
-				images: imagesUrls,
+				images: []string{"url1", "url2"},
 				err:    nil,
+			},
+		},
+		{
+			input: input{
+				from: time.Now(),
+				to:   time.Now().AddDate(0, 0, 2),
+			},
+			expected: expected{
+				images: []string{},
+				err:    errFetch,
 			},
 		},
 	}
